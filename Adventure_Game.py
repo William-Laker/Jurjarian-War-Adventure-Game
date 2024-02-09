@@ -12,30 +12,34 @@ global health_potion
 health_potion=5
 global treasure
 treasure=0
-global Enemy_Health
-Enemy_Health = 0 
-global Enemy_Modifier
-Enemy_Modifier = 0
 global modifier
 modifier = 2
 global armour
 armour = 10
 
-name_complete=0
-age_complete=0
-
 weapon = "null"
 inventory = ["stick", "dagger"]
 
+class charactorStats: 
+   def __init__(self, health, armourClass, modifier, level, exp):
+      self.phealth = health
+      self.parmourClass = armourClass
+      self.pmodifier = modifier
+      self.plevel = level
+      self.pexp = exp
+
+player = charactorStats(10, 10, 2, 0, 0)
+
 class Enemies_Stats:
 
-    def __init__(self, health, modifier):
+    def __init__(self, health, modifier, armourClass):
         self.health = health
         self.modifier = modifier
+        self.armourClass = armourClass
 
-Enemy_Rat = Enemies_Stats(1, 1)
-Enemy_Spider = Enemies_Stats(3, 2)
-Enemy_Skele = Enemies_Stats(4, 1)
+Enemy_Rat = Enemies_Stats(1, 1, 12)
+Enemy_Spider = Enemies_Stats(3, 2, 10)
+Enemy_Skele = Enemies_Stats(4, 1, 8)
 
 
 class Weapons_Stats:
@@ -68,7 +72,7 @@ def Death_function(): #Function to end the game if the player is dead
    time.sleep(5)
    sys.exit()
 
-def Levelup_function():
+def Levelup_function(player):
    global level
    global exp
    global modifier
@@ -106,48 +110,34 @@ def Inventory_function(weapon):
         print("Okay, leave it!")
     return
 
-def Combat_Function(): 
-    global hp
-    global Enemy_Health
-    global Enemy_Modifier
-    global modifier
-    global armour
+def Combat_Function(player, enemy): 
     
-    while(Enemy_Health > 0 and hp > 0):             
+    while(enemy.health > 0 and player.phealth > 0):             
         hitchance = random.randint(1,20)
-        Attack_Roll = hitchance+modifier
+        Attack_Roll = hitchance + player.pmodifier
+        print(Attack_Roll)
          
-        if Attack_Roll >= 15:
-          Enemy_Health = Enemy_Health-1
-          print("You have",hp,"Hitpoints left \n")
+        if Attack_Roll >= enemy.armourClass:
+          enemy.health = enemy.health-1
+          print("You have",player.phealth,"Hitpoints left \n")
           time.sleep(1)
         
         else:
           print ("It attacks you")
           attackchance = random.randint(1,20)
-          Eattack_Roll = attackchance + Enemy_Modifier
-          if Eattack_Roll >= armour:
-            hp=hp-1                         
-            print("You have",hp,"Hitpoints left \n")
+          Eattack_Roll = attackchance + enemy.modifier
+          if Eattack_Roll >= player.parmourClass:
+            player.phealth=player.phealth-1                         
+            print("You have",player.phealth,"Hitpoints left \n")
             time.sleep(1)
+          else:
+             print("The creature missed")
 
 
-while name_complete < 1: #Validating that name is over 2 characters long 
-   name=input ("Type in your adventurers name... ") #enter name
-   name_length=len(name)
-   if name_length > 2:
-      print("Your name is long enough \n")
-      name_complete=name_complete+1 #Ending the validation loop 
-   else:
-      print("Enter a name with greater then 2 characters \n")
 
-while age_complete < 1:  #Validating that age is between 16 and 30
-   age=int(input("Type in your adventurer's age")) #enter age
-   if age >= 16 and age <= 65:
-      print("Your age is within acceptable parameters \n")
-      age_complete=age_complete+1   #Ending the validation loop
-   else:
-      print("Enter an age between or equal to 16 and 65 \n")
+name=input ("Type in your adventurers name... ") #enter name
+
+print(Enemy_Rat)
 
 print ("Welcome",name,"to the Jurjarian Temple")
 time.sleep(1)
@@ -163,20 +153,16 @@ print ("You spot a fierce rat in the centre of the tunnel")
 
 time.sleep(1)
 
-event1 = input("Press s to sneak by. Press t to throw a stone at it. \n ")
+event1 = input("Press s to sneak by. Press t to throw a stone at it. ")
 if event1 == ("s"):
    print ("You carefully edge past \n")
    exp=exp+2
    time.sleep(1)
 if event1 == ("t"):
     print ("You throw a stone at the rat\n")
-    Enemy_Health =(Enemy_Rat.health)
-    Enemy_Modifier = (Enemy_Rat.modifier)
-    Combat_Function()
+    Combat_Function(player, Enemy_Rat)
     time.sleep(1)
     print("The rat is dead \n")
-    Enemy_Health = Enemy_Health - Enemy_Health 
-    Enemy_Modifier = Enemy_Modifier - Enemy_Modifier
     exp=exp+1
 
 if exp >= 5:
@@ -198,11 +184,7 @@ if encounter1 == 2:
    print("An angry looking spider crawls out of a hole in the wall \n")
                                     
    time.sleep(1)
-   Enemy_Health =(Enemy_Spider.health)
-   Enemy_Modifier = (Enemy_Spider.modifier)
-   Combat_Function()
-   Enemy_Health = Enemy_Health - Enemy_Health 
-   Enemy_Modifier = Enemy_Modifier - Enemy_Modifier
+   Combat_Function(player, Enemy_Spider)
    exp=exp+2
    time.sleep(1)
    
@@ -227,8 +209,7 @@ heal=input("Would you like to heal some health? say yes or no")
 time.sleep(1)
 if heal == "yes" or "Yes":
     Healthpotion_function()
-   
-else: 
+if heal == "no" or "No":
     print("Ok then \n")
    
 
@@ -291,7 +272,7 @@ if event3 == "s":
     if sneakchance <= 5:
         print("You failed to sneak by the skeleton")
         time.sleep(1)
-        Skeletonfight_function()
+        Combat_Function(player, Enemy_Skele)
         exp=exp+1
     else:
         print("You successfully creeped past the skeleton")
@@ -301,11 +282,7 @@ if event3 == "s":
 if event3 == "a":
     print("You charge at the Skeleton")
     time.sleep(1)
-    Enemy_Health =(Enemy_Spider.health)
-    Enemy_Modifier = (Enemy_Spider.modifier)
-    Combat_Function()
-    Enemy_Health = Enemy_Health - Enemy_Health 
-    Enemy_Modifier = Enemy_Modifier - Enemy_Modifier
+    Combat_Function(player, Enemy_Spider)
     exp=exp+2
 
 print("You made it past the skeleton")
